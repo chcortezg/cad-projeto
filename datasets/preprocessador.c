@@ -56,7 +56,12 @@ static int cmp_i32(const void *a, const void *b) {
 }
 
 int main(int argc, char **argv) {
-    if (argc != 3) { fprintf(stderr, "uso: %s <entrada.txt> <saida.bin>\n", argv[0]); return 1; }
+    /* Terceiro argumento opcional: "dirigido" mantem so u->v; padrao grava u->v e v->u */
+    int dirigido = argc == 4 && strcmp(argv[3], "dirigido") == 0;
+    if (argc < 3 || argc > 4 || (argc == 4 && !dirigido && strcmp(argv[3], "nao-dirigido") != 0)) {
+        fprintf(stderr, "uso: %s <entrada.txt> <saida.bin> [dirigido|nao-dirigido]\n", argv[0]);
+        return 1;
+    }
     FILE *f = fopen(argv[1], "rb");
     if (!f) { perror(argv[1]); return 1; }
     setvbuf(f, NULL, _IOFBF, 1 << 24);
@@ -90,7 +95,8 @@ int main(int argc, char **argv) {
         presente[u] = presente[v] = 1;
         arestas++;
         if (u == v) { lacos++; continue; }
-        grau[u]++; grau[v]++;
+        grau[u]++;
+        if (!dirigido) grau[v]++;
     }
     double t1 = agora();
 
@@ -113,13 +119,13 @@ int main(int argc, char **argv) {
     memcpy(cursor, offsets, (size_t)n * sizeof *cursor);
     int32_t *destinos = xcalloc((size_t)m_bruto, sizeof *destinos);
 
-    /* Passe 2: preenche os dois sentidos de cada aresta */
+    /* Passe 2: preenche u->v (e v->u se nao dirigido) */
     rewind(f);
     while (fgets(buf, sizeof buf, f)) {
         if (parse_linha(buf, &u, &v) != 1 || u == v) continue;
         int32_t a = novo_id[u], b = novo_id[v];
         destinos[cursor[a]++] = b;
-        destinos[cursor[b]++] = a;
+        if (!dirigido) destinos[cursor[b]++] = a;
     }
     fclose(f);
     for (int64_t i = 0; i < n; i++)
@@ -150,7 +156,7 @@ int main(int argc, char **argv) {
     memset(&h, 0, sizeof h);
     memcpy(h.magic, CSR_MAGIC, sizeof h.magic);
     h.versao = CSR_VERSAO;
-    h.flags = CSR_NAO_DIRIGIDO;
+    h.flags = dirigido ? 0u : CSR_NAO_DIRIGIDO;
     h.n = n;
     h.m = w;
     FILE *g = fopen(argv[2], "wb");
@@ -161,8 +167,9 @@ int main(int argc, char **argv) {
     if (fclose(g) != 0) { perror("fclose"); return 1; }
     double t4 = agora();
 
-    printf("arestas lidas: %lld | lacos: %lld | duplicatas removidas: %lld\n",
-           arestas, lacos, (long long)((m_bruto - w) / 2));
+    printf("modo: %s | arestas lidas: %lld | lacos: %lld | duplicatas removidas: %lld\n",
+           dirigido ? "dirigido" : "nao dirigido", arestas, lacos,
+           (long long)(dirigido ? m_bruto - w : (m_bruto - w) / 2));
     printf("maior ID: %llu | n: %lld | m (arcos): %lld | grau max: %lld | grau medio: %.2f\n",
            (unsigned long long)max_id, (long long)n, (long long)w, (long long)grau_max, (double)w / n);
     printf("tempos (s): passe1 %.2f | passe2 %.2f | ordenar %.2f | gravar %.2f | total %.2f\n",

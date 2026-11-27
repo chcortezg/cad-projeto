@@ -1,3 +1,6 @@
 # Datasets utilizados
 
-- [Orkut](https://snap.stanford.edu/data/com-Orkut.html) - Ungraph
+- [roadNet-CA](https://snap.stanford.edu/data/roadNet-CA.html) - nao dirigido (o arquivo ja traz os dois sentidos)
+- [soc-LiveJournal1](https://snap.stanford.edu/data/soc-LiveJournal1.html) - dirigido; gerado nas duas versoes (dirigido e nao dirigido)
+
+Gerar os binarios: `make preprocess`
