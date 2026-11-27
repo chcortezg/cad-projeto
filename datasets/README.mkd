@@ -1,0 +1,17 @@
+# Datasets
+
+Essa pasta contém os arquivos relacionados aos datasets, desde explicações sobre os datasets escolhidos ao processamento dos dados.
+
+## Datasets escolhidos
+
+- [roadNet-CA](https://snap.stanford.edu/data/roadNet-CA.html) - nao dirigido (o arquivo ja traz os dois sentidos)
+- [soc-LiveJournal1](https://snap.stanford.edu/data/soc-LiveJournal1.html) - dirigido; gerado nas duas versoes (dirigido e nao dirigido)
+- [com-orkut.ungraph](https://snap.stanford.edu/data/com-Orkut.html) - não dirigo; grafo maior, para testes mais intensos
+
+## Preprocessador
+
+O preprocessador é o arquivo que será responsável por tansformar os datasets em binários para serem usados pelos programas, permitindo que eles pulem a etapa de preparo dos dados, que pode ser muito custosa a depender do dataset utilizado.
+
+### Utilização
+
+Gerar os binarios: `make preprocess`
