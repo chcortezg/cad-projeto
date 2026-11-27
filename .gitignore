@@ -2,3 +2,4 @@
 /datasets/*.bin
 /datasets/preprocessador
 /outputs/
+*.csv
